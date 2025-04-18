@@ -11,6 +11,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
+import static com.example.naver.web.exception.ExceptionType.DECRYPT_FAIL;
 import static com.example.naver.web.exception.ExceptionType.ENCRYPT_FAIL;
 
 @Component
@@ -58,7 +59,7 @@ public class CryptoUtil {
             byte[] original = cipher.doFinal(Base64.getDecoder().decode(encrypted));
             return new String(original);
         } catch (Exception ex) {
-            throw new CommonException(ENCRYPT_FAIL.getCode(), ENCRYPT_FAIL.getErrorMessage());
+            throw new CommonException(DECRYPT_FAIL.getCode(), DECRYPT_FAIL.getErrorMessage());
         }
     }
 }

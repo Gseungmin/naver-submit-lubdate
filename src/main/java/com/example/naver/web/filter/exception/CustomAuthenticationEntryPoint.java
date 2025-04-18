@@ -35,7 +35,12 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         if (exception != null && Objects.equals(exception.getCode(), BLOCKED_IP.getCode())
                 && serverType.equalsIgnoreCase("prod")) {
-            slackService.sendMessage(request, exception);
+            slackService.sendBadRequestMessage(request, exception);
+        }
+
+        if (exception != null && exception.getCode() >= REDIS_CONNECT_ERROR.getCode() &&
+                exception.getCode() <= REDIS_UPDATE_CACHE_REMOVE_ERROR.getCode()) {
+            slackService.sendRedisErrorMessage(request, exception);
         }
 
         setResponse(response, exception);
