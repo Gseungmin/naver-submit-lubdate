@@ -9,10 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static com.example.naver.web.util.Util.SLACK_WEBHOOK_URL;
 import static com.slack.api.webhook.WebhookPayloads.payload;
@@ -24,7 +21,28 @@ public class SlackService {
     private final Slack slackClient = Slack.getInstance();
 
     @Async
-    public void sendMessage(String title, HashMap<String, String> data) {
+    public void sendBadRequestMessage(HttpServletRequest request, ExceptionType exception) {
+        String title = "🚨 악의적인 요청이 들어왔습니다.";
+        Map<String, String> data = new HashMap<>();
+        data.put("에러 메시지", exception.getErrorMessage());
+        data.put("요청 URI", request.getRequestURI());
+        data.put("요청 IP", request.getRemoteAddr());
+        data.put("Timestamp", new Date().toString());
+        data.put("Request Details", logRequestDetails(request));
+        sendMessage(title, data);
+    }
+
+    @Async
+    public void sendRedisErrorMessage(HttpServletRequest request, ExceptionType exception) {
+        String title = "🛑 Redis Cache Error 발생";
+        Map<String, String> data = new HashMap<>();
+        data.put("에러 코드", String.valueOf(exception.getCode()));
+        data.put("에러 메시지", exception.getErrorMessage());
+        data.put("발생 시각", new Date().toString());
+        sendMessage(title, data);
+    }
+
+    private void sendMessage(String title, Map<String, String> data) {
         try {
             slackClient.send(SLACK_WEBHOOK_URL, payload(p -> p
                     .text(title)
@@ -37,22 +55,6 @@ public class SlackService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @Async
-    public void sendMessage(HttpServletRequest request, ExceptionType exception) {
-        String title = "악의적인 요청이 들어왔습니다.";
-        String requestURI = request.getRequestURI();
-        String clientIp = request.getRemoteAddr();
-
-        HashMap<String, String> data = new HashMap<>();
-        data.put("에러 메시지", exception.getErrorMessage());
-        data.put("요청 URI", requestURI);
-        data.put("요청 IP", clientIp);
-        data.put("Timestamp", new Date().toString());
-        data.put("Request Details", logRequestDetails(request));
-
-        sendMessage(title, data);
     }
 
     private String logRequestDetails(HttpServletRequest request) {
