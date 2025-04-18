@@ -31,28 +31,4 @@ public class LoginRedisService {
     public String findTokenByPid(String prefix, String username) {
         return redisTemplate.opsForValue().get(username + ":" + prefix);
     }
-
-    public void deleteToken(String username) {
-        redisTemplate.executePipelined(new SessionCallback<Void>() {
-            @Override
-            public Void execute(RedisOperations operations) throws DataAccessException {
-                operations.delete(username + ":accessToken");
-                operations.delete(username + ":refreshToken");
-                return null;
-            }
-        });
-    }
-
-    public void initCoupleToken(String myId, String otherId) {
-        redisTemplate.executePipelined(new SessionCallback<Void>() {
-            @Override
-            public Void execute(RedisOperations operations) throws DataAccessException {
-                operations.delete(myId + ":accessToken");
-                operations.delete(myId + ":refreshToken");
-                operations.delete(otherId + ":accessToken");
-                operations.delete(otherId + ":refreshToken");
-                return null;
-            }
-        });
-    }
 }

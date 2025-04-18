@@ -91,6 +91,11 @@ public enum ExceptionType {
     REDIS_INSERT_ERROR(60002, "레디스 메시지 삽입 시 오류가 발생했습니다"),
     REDIS_GET_ERROR(60003, "메시지 조회 시 오류가 발생했습니다"),
     REDIS_DELETE_ERROR(60004, "레디스 메시지 삭제 시 오류가 발생했습니다"),
+    REDIS_WRITE_ERROR(60005, "메시지 작성 시 오류가 발생했습니다"),
+    REDIS_DELETE_CHECK_ERROR(60006, "메시지 삭제 체크 시 오류가 발생했습니다"),
+    REDIS_UPDATE_CHECK_ERROR(60007, "메시지 업데이트 체크 시 오류가 발생했습니다"),
+    REDIS_DELETE_CACHE_REMOVE_ERROR(60008, "삭제 캐시 제거 오류가 발생했습니다"),
+    REDIS_UPDATE_CACHE_REMOVE_ERROR(60009, "업데이트 캐시 제거 오류가 발생했습니다"),
 
     /**
      * Event Exception

@@ -75,36 +75,22 @@ public class QueueService {
             for (ZSetOperations.TypedTuple<String> entry : entries) {
                 String messageJson = entry.getValue();
                 Double score = entry.getScore();
+
                 if (messageJson != null && !messageJson.isEmpty()) {
                     MessageQueueRequestDto dto = objectMapper.readValue(messageJson, MessageQueueRequestDto.class);
                     dto.setSequenceNumber(score.longValue());
                     result.add(dto);
                 }
             }
-        }
-        catch (RedisConnectionFailureException e) {
-            throw new InfraException(REDIS_CONNECT_ERROR.getCode(), REDIS_CONNECT_ERROR.getErrorMessage());
-        } catch (RedisCommandTimeoutException e) {
-            throw new InfraException(REDIS_TIMEOUT_ERROR.getCode(), REDIS_TIMEOUT_ERROR.getErrorMessage());
-        } catch (Exception e) {
-            removeMemberQueue(memberId);
-            throw new InfraException(REDIS_GET_ERROR.getCode(), REDIS_GET_ERROR.getErrorMessage());
-        }
-
-        return result;
-    }
-
-    public void removeMemberQueue(Long otherId) {
-        String queueCacheKey = QUEUE_PREFIX + otherId.toString();
-        try {
-            redisTemplateForQueue.delete(queueCacheKey);
         } catch (RedisConnectionFailureException e) {
             throw new InfraException(REDIS_CONNECT_ERROR.getCode(), REDIS_CONNECT_ERROR.getErrorMessage());
         } catch (RedisCommandTimeoutException e) {
             throw new InfraException(REDIS_TIMEOUT_ERROR.getCode(), REDIS_TIMEOUT_ERROR.getErrorMessage());
         } catch (Exception e) {
-            throw new InfraException(REDIS_DELETE_ERROR.getCode(), REDIS_DELETE_ERROR.getErrorMessage());
+            throw new InfraException(REDIS_GET_ERROR.getCode(), REDIS_GET_ERROR.getErrorMessage());
         }
+
+        return result;
     }
 
     public void removeMemberQueue(Long memberId, Long lastSequenceNumber) {

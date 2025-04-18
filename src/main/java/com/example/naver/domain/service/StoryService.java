@@ -209,7 +209,9 @@ public class StoryService {
 
             StoryItemResponseDto data = new StoryItemResponseDto(story, dto);
             MessageQueueRequestDto message = new MessageQueueRequestDto(data, memberId, UPDATE);
-            storyCacheService.update(story.getId(), dto.getOtherId(), data, message);
+
+            storyCacheService.update(story.getId(), data);
+            queueService.insert(dto.getOtherId(), message);
             return data;
         } finally {
             lock.unlock();
@@ -258,7 +260,8 @@ public class StoryService {
             StoryItemResponseDto data = new StoryItemResponseDto(itemList);
             MessageQueueRequestDto message = new MessageQueueRequestDto(itemList.get(0), data, memberId, DELETE);
 
-            storyCacheService.delete(storyIds, otherId, message);
+            storyCacheService.delete(storyIds);
+            queueService.insert(otherId, message);
         } finally {
             lock.unlock();
             coupleLockService.cleanupStoryLock(coupleId, lock);
