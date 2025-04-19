@@ -11,7 +11,7 @@ import com.example.naver.domain.entity.member.Couple;
 import com.example.naver.domain.entity.member.Member;
 import com.example.naver.domain.entity.story.Story;
 import com.example.naver.domain.generator.StoryIDGenerator;
-import com.example.naver.domain.redisService.QueueService;
+import com.example.naver.domain.redisService.messageQueue.QueueService;
 import com.example.naver.domain.redisService.story.DeletedStoryCacheService;
 import com.example.naver.domain.redisService.story.StoryCacheService;
 import com.example.naver.domain.redisService.story.UpdatedStoryCacheService;
@@ -210,7 +210,7 @@ public class StoryService {
             StoryItemResponseDto data = new StoryItemResponseDto(story, dto);
             MessageQueueRequestDto message = new MessageQueueRequestDto(data, memberId, UPDATE);
 
-            storyCacheService.update(story.getId(), data);
+            storyCacheService.update(story, data);
             queueService.insert(dto.getOtherId(), message);
             return data;
         } finally {

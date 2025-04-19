@@ -33,7 +33,7 @@ public class SlackService {
     }
 
     @Async
-    public void sendRedisErrorMessage(HttpServletRequest request, ExceptionType exception) {
+    public void sendRedisErrorMessage(ExceptionType exception) {
         String title = "🛑 Redis Cache Error 발생";
         Map<String, String> data = new HashMap<>();
         data.put("에러 코드", String.valueOf(exception.getCode()));

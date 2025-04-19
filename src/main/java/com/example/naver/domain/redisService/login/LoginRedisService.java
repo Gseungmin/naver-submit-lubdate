@@ -1,4 +1,4 @@
-package com.example.naver.domain.redisService;
+package com.example.naver.domain.redisService.login;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
