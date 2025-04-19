@@ -2,6 +2,7 @@ package com.example.naver.domain.entity.story;
 
 import com.example.naver.domain.dto.story.req.StoryCreateListItemRequestDto;
 import com.example.naver.domain.dto.story.req.StoryCreateRequestDto;
+import com.example.naver.domain.dto.story.res.StoryItemResponseDto;
 import com.example.naver.domain.entity.base.BaseEntity;
 import com.example.naver.web.security.EncryptorConverter;
 import jakarta.persistence.*;
@@ -10,7 +11,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
-
 import java.time.LocalDateTime;
 
 import static com.example.naver.web.util.Util.ITEM_CREATED;
@@ -76,5 +76,12 @@ public class Story extends BaseEntity {
         this.location = dto.getLocation();
         this.setCreatedDate(date);
         this.setLastModifiedDate(date);
+    }
+
+    public void updateStory(StoryItemResponseDto data) {
+        this.date = data.getDate();
+        this.memo = data.getMemo();
+        this.location = data.getLocation();
+        this.setLastModifiedDate(LocalDateTime.now());
     }
 }

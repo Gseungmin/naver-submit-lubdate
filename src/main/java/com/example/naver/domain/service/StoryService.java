@@ -210,7 +210,7 @@ public class StoryService {
             StoryItemResponseDto data = new StoryItemResponseDto(story, dto);
             MessageQueueRequestDto message = new MessageQueueRequestDto(data, memberId, UPDATE);
 
-            storyCacheService.update(story.getId(), data);
+            storyCacheService.update(story, data);
             queueService.insert(dto.getOtherId(), message);
             return data;
         } finally {
