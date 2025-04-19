@@ -2,7 +2,7 @@ package com.example.naver.domain.service;
 
 import com.example.naver.domain.dto.member.res.TokenResponseDto;
 import com.example.naver.domain.entity.member.Member;
-import com.example.naver.domain.redisService.LoginRedisService;
+import com.example.naver.domain.redisService.login.LoginRedisService;
 import com.example.naver.web.exception.member.MemberException;
 import com.example.naver.web.filter.apple.ApplePublicKeyGenerator;
 import com.example.naver.web.filter.apple.ApplePublicKeyResponse;

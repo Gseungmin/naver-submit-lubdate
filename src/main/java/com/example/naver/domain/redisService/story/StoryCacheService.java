@@ -1,8 +1,6 @@
 package com.example.naver.domain.redisService.story;
 
-import com.example.naver.domain.dto.MessageQueueRequestDto;
 import com.example.naver.domain.dto.story.res.StoryItemResponseDto;
-import com.example.naver.domain.redisService.QueueService;
 import com.example.naver.web.exception.infra.InfraException;
 import io.lettuce.core.RedisCommandTimeoutException;
 import lombok.RequiredArgsConstructor;

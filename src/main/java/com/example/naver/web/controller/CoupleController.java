@@ -2,7 +2,7 @@ package com.example.naver.web.controller;
 
 import com.example.naver.domain.dto.AckRequestDto;
 import com.example.naver.domain.dto.MessageQueueRequestDto;
-import com.example.naver.domain.redisService.QueueService;
+import com.example.naver.domain.redisService.messageQueue.QueueService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
