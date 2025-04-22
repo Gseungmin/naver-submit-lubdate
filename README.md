@@ -1,11 +1,10 @@
 ## 서비스 주요 아키텍처
-
-[링크](https://jseungmin.notion.site/1b0e2fd91ae280ed9a19e80d486f1d13?pvs=4)
+[레디스를 메시지큐 아키텍처로 도입한 배경](https://jseungmin.notion.site/1b0e2fd91ae280ed9a19e80d486f1d13)
 1. 커플간 데이터를 동기화 하기 위해 REDIS를 메시지 큐로 사용
 2. 추가적으로 벌크 업데이트를 통해 커플 데이터를 데이터베이스로 동기화
 
 ## 서비스 추가 개선사항
-[링크](https://jseungmin.notion.site/1dde2fd91ae280bfbc80ec813ef44ebe)
+[레디스 장애 발생 시 서비스 안정화를 위한 어플리케이션 로직](https://jseungmin.notion.site/1dde2fd91ae280bfbc80ec813ef44ebe)
 
 ### 레디스 장애시 커플 메시지 동기화 : QueueService.java
 1. ZSET 자료구로를 사용해서 커플 메시지 큐를 통해 데이터 동기화
