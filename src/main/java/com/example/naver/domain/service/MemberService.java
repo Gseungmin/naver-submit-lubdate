@@ -24,6 +24,30 @@ public class MemberService {
     private final CodeGenerator codeGenerator;
     private final AuthRepository authRepository;
 
+    @Transactional(readOnly = true)
+    public Member findByIdWithCouple(Long id) {
+        Optional<Member> findMember = memberRepository.findByIdWithCouple(id);
+
+        if (findMember.isEmpty()) {
+            throw new MemberException(
+                    MEMBER_NOT_EXIST.getCode(),
+                    MEMBER_NOT_EXIST.getErrorMessage()
+            );
+        }
+
+        Member member = findMember.get();
+
+        if (member.getNickname() == null) {
+            throw new MemberException(
+                    DELETED_MEMBER.getCode(),
+                    DELETED_MEMBER.getErrorMessage()
+            );
+        }
+
+        return member;
+    }
+
+
     /* 회원 번호 조회 */
     @Transactional(readOnly = true)
     public void findByPhone(String phoneNumber) {
