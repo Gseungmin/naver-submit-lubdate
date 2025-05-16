@@ -3,6 +3,7 @@ package com.example.naver.domain.entity.member;
 import com.example.naver.domain.dto.member.req.MemberCreateRequestDto;
 import com.example.naver.domain.entity.base.BaseEntity;
 import com.example.naver.domain.generator.SnowflakeId;
+import com.example.naver.web.security.EncryptorConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -33,7 +34,7 @@ public class Member extends BaseEntity {
     private String nickname;
     private LocalDate birth;
     private String gender;
-//    @Convert(converter = EncryptorConverter.class)
+    @Convert(converter = EncryptorConverter.class)
     private String profileImage = DEFAULT_PROFILE_IMAGE;
 
     @Column(unique = true)
