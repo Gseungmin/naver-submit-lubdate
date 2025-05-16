@@ -22,6 +22,9 @@ public class Couple extends BaseEntity {
     @Column(name = "coupleId")
     private Long id;
 
+    private Long firstId;
+    private Long secondId;
+
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "couple")
     private List<Member> memberList = new ArrayList<>();
