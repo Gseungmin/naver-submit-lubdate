@@ -1,0 +1,50 @@
+server:
+  id: 1
+  type: test
+
+admin:
+  id: 123456789
+
+phone:
+  number: 99900000000
+
+spring:
+  config.activate.on-profile: test
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/couple
+    username: happy
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+      auto_quote_keyword: true
+
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        default_batch_fetch_size: 100
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: debug
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG
+
+jwt:
+  secret: EWAeqEEUaElzSlY3JldEtlY3JldEtXNNeVNlY3JldEtleQ==
+
+crypto:
+  secret-key: 12345678901234567890123456789012
+  init-vector: lubdateTest12345
+
+common-api:
+  anniversary:
