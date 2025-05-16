@@ -2,6 +2,7 @@ package com.example.naver.domain.entity.member;
 
 import com.example.naver.domain.entity.base.BaseEntity;
 import com.example.naver.domain.generator.SnowflakeId;
+import com.example.naver.web.security.EncryptorConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -30,7 +31,7 @@ public class Auth extends BaseEntity {
     private Long id;
 
     @Column(name = "phone_number", unique = true)
-//    @Convert(converter = EncryptorConverter.class)
+    @Convert(converter = EncryptorConverter.class)
     private String phoneNumber;
 
     private LocalDateTime lastChanged;

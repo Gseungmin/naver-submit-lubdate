@@ -21,4 +21,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "left join fetch m.roles " +
             "where m.socialId = :socialId")
     Optional<Member> findBySocialId(String socialId);
+
+    @Query("select m from Member m " +
+            "left join fetch m.auth " +
+            "left join fetch m.couple " +
+            "where m.id = :id")
+    Optional<Member> findByIdWithCouple(Long id);
 }
