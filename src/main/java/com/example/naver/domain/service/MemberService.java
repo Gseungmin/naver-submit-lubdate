@@ -77,7 +77,7 @@ public class MemberService {
         Auth auth = new Auth(dto.getPhone());
         Member member = new Member(
                 dto,
-                codeGenerator.generateBase64Id(),
+                codeGenerator.generateBase36Id(),
                 socialId
         );
 

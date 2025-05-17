@@ -3,6 +3,7 @@ package com.example.naver.domain.redis.queue;
 import com.example.naver.domain.dto.queue.req.MessageQueueRequestDto;
 import com.example.naver.domain.service.SlackService;
 import com.example.naver.web.exception.infra.InfraException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.RedisCommandTimeoutException;
 import lombok.RequiredArgsConstructor;
@@ -52,19 +53,10 @@ public class QueueService {
 
         try {
             String msgJson = objectMapper.writeValueAsString(message);
-            DefaultRedisScript<Long> script = new DefaultRedisScript<>(INSERT_LUA, Long.class);
-
-            redisTemplateForQueue.execute(
-                    script,
-                    Arrays.asList(seqKey, queueKey),
-                    msgJson,
-                    String.valueOf(Duration.ofDays(60).getSeconds())
-            );
+            executeInsert(seqKey, queueKey, msgJson);
 
         } catch (RedisConnectionFailureException | RedisCommandTimeoutException e) {
-            message.setSequenceNumber(FALLBACK_SEQ);
-            cacheLocally(memberId, message);
-            slackService.sendRedisErrorMessage(REDIS_CONNECT_ERROR);
+            fallbackInsert(memberId, message);
 
         } catch (Exception e) {
             throw new InfraException(
@@ -74,34 +66,32 @@ public class QueueService {
         }
     }
 
+    private void executeInsert(String seqKey, String queueKey, String msgJson) {
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>(INSERT_LUA, Long.class);
+        redisTemplateForQueue.execute(
+                script,
+                Arrays.asList(seqKey, queueKey),
+                msgJson,
+                String.valueOf(Duration.ofDays(60).getSeconds())
+        );
+    }
+
+    private void fallbackInsert(Long memberId, MessageQueueRequestDto msg) {
+        msg.setSequenceNumber(FALLBACK_SEQ);
+        cacheLocally(memberId, msg);
+        slackService.sendRedisErrorMessage(REDIS_CONNECT_ERROR);
+    }
+
     /*
      * 메시지 큐 조회 메서드
      * 1️⃣ ZSET에서 조회하며 score → sequenceNumber 로 주입
      * 2️⃣ 로컬 캐시에 데이터가 있으면 함께 반환
      * */
     public List<MessageQueueRequestDto> getMemberQueue(Long memberId) {
-        String queueCacheKey = QUEUE_PREFIX + memberId.toString();
         List<MessageQueueRequestDto> result = new ArrayList<>();
 
         try {
-            Set<ZSetOperations.TypedTuple<String>> entries =
-                    redisTemplateForQueue.opsForZSet().rangeWithScores(queueCacheKey, 0, -1);
-
-            if (entries == null || entries.isEmpty()) {
-                return result;
-            }
-
-            for (ZSetOperations.TypedTuple<String> entry : entries) {
-                String messageJson = entry.getValue();
-                Double score = entry.getScore();
-
-                if (messageJson != null && !messageJson.isEmpty()) {
-                    MessageQueueRequestDto dto = objectMapper.readValue(messageJson, MessageQueueRequestDto.class);
-                    dto.setSequenceNumber(score.longValue());
-                    result.add(dto);
-                }
-            }
-
+            result.addAll(executeGet(memberId));
         } catch (RedisConnectionFailureException | RedisCommandTimeoutException e) {
             slackService.sendRedisErrorMessage(REDIS_CONNECT_ERROR);
 
@@ -116,6 +106,31 @@ public class QueueService {
         return result;
     }
 
+    private List<MessageQueueRequestDto> executeGet(Long memberId) throws JsonProcessingException {
+        String queueKey = QUEUE_PREFIX + memberId;
+        List<MessageQueueRequestDto> result = new ArrayList<>();
+
+        Set<ZSetOperations.TypedTuple<String>> entries =
+                redisTemplateForQueue.opsForZSet().rangeWithScores(queueKey, 0, -1);
+
+        if (entries.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        for (ZSetOperations.TypedTuple<String> entry : entries) {
+            String messageJson = entry.getValue();
+            Double score = entry.getScore();
+
+            if (!messageJson.isEmpty()) {
+                MessageQueueRequestDto dto = objectMapper.readValue(messageJson, MessageQueueRequestDto.class);
+                dto.setSequenceNumber(score.longValue());
+                result.add(dto);
+            }
+        }
+
+        return result;
+    }
+
     /*
      * 메시지 큐 삭제 메서드
      * 1️⃣ 큐에서 메시지를 삭제
@@ -127,10 +142,8 @@ public class QueueService {
             return;
         }
 
-        String queueCacheKey = QUEUE_PREFIX + memberId.toString();
         try {
-            redisTemplateForQueue.opsForZSet()
-                    .removeRangeByScore(queueCacheKey, 0, lastSequenceNumber);
+            executeDelete(memberId, lastSequenceNumber);
 
         } catch (RedisConnectionFailureException | RedisCommandTimeoutException e) {
             slackService.sendRedisErrorMessage(REDIS_CONNECT_ERROR);
@@ -146,13 +159,19 @@ public class QueueService {
         }
     }
 
+    private void executeDelete(Long memberId, Long lastSequence) {
+        String queueKey = QUEUE_PREFIX + memberId;
+        redisTemplateForQueue.opsForZSet().removeRangeByScore(queueKey, 0, lastSequence);
+    }
+
+
     private void cacheLocally(Long memberId, MessageQueueRequestDto message) {
         localCacheQueue
                 .computeIfAbsent(memberId, id -> Collections.synchronizedList(new ArrayList<>()))
                 .add(message);
     }
 
-    private List<MessageQueueRequestDto> getLocalCache(Long memberId) {
+    public List<MessageQueueRequestDto> getLocalCache(Long memberId) {
         return localCacheQueue.getOrDefault(memberId, Collections.emptyList());
     }
 

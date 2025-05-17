@@ -5,6 +5,7 @@ import com.example.naver.domain.dto.story.req.StoryCreateRequestDto;
 import com.example.naver.domain.dto.story.res.StoryItemResponseDto;
 import com.example.naver.domain.entity.base.BaseEntity;
 import com.example.naver.domain.generator.SnowflakeId;
+import com.example.naver.web.security.EncryptorConverter;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -30,7 +31,7 @@ public class Story extends BaseEntity {
     @Column(name = "storyId")
     private Long id;
 
-//    @Convert(converter = EncryptorConverter.class)
+    @Convert(converter = EncryptorConverter.class)
     private String url;
     private String date;
     private String memo;
