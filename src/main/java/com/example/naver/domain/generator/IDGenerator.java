@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 import java.io.Serializable;
 
 import static com.example.naver.web.exception.ExceptionType.SYSTEM_TIME_EXCEPTION;
+import static com.example.naver.web.util.Util.EPOCH;
 
 @Component
 public class IDGenerator implements IdentifierGenerator {
 
-    private static final long EPOCH           = 1700000000000L;
     private static final long SERVER_ID       = 1L;
     private static final long SERVER_ID_BITS  = 5L;
     private static final long SEQUENCE_BITS   = 12L;
