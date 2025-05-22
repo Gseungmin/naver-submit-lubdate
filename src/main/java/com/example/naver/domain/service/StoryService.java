@@ -320,7 +320,7 @@ public class StoryService {
     }
 
     /* 벌크 업데이트 */
-    @Scheduled(fixedRate = TEM_MINUTE)
+    @Scheduled(fixedRate = ONE_MINUTE)
     public void syncStoryToDatabase() {
         bulkUpdateStoryAsync();
         bulkUpdateDeleteStoryAsync();

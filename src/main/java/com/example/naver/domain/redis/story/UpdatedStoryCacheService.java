@@ -22,7 +22,7 @@ import static com.example.naver.web.util.Util.UPDATE_STORY_CACHE;
 @RequiredArgsConstructor
 public class UpdatedStoryCacheService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> objectTemplate;
     private final SlackService slackService;
 
     /*
@@ -30,7 +30,7 @@ public class UpdatedStoryCacheService {
      * */
     public Map<Long, StoryItemResponseDto> getUpdatedStory() {
         try {
-            Map<Object, Object> entries = redisTemplate.opsForHash()
+            Map<Object, Object> entries = objectTemplate.opsForHash()
                     .entries(UPDATE_STORY_CACHE);
 
             Map<Long, StoryItemResponseDto> result = new HashMap<>();
@@ -59,7 +59,7 @@ public class UpdatedStoryCacheService {
      * */
     public void removeCache(Set<Long> ids) {
         try {
-            redisTemplate.opsForHash()
+            objectTemplate.opsForHash()
                     .delete(UPDATE_STORY_CACHE,
                             ids.stream()
                                     .map(Object::toString)
@@ -84,7 +84,7 @@ public class UpdatedStoryCacheService {
     public Map<Long, StoryItemResponseDto> findUpdatedList(List<String> ids) {
         try {
             HashOperations<String, String, StoryItemResponseDto> hashOps =
-                    redisTemplate.opsForHash();
+                    objectTemplate.opsForHash();
 
             List<StoryItemResponseDto> cachedList =
                     hashOps.multiGet(UPDATE_STORY_CACHE, ids);

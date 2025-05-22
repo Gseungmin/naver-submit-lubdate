@@ -14,10 +14,10 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class LoginRedisService {
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, String> stringTemplate;
 
     public void saveToken(String username, String accessToken, String refreshToken) {
-        redisTemplate.executePipelined(new SessionCallback<Void>() {
+        stringTemplate.executePipelined(new SessionCallback<Void>() {
             @Override
             public Void execute(RedisOperations operations) throws DataAccessException {
                 ValueOperations<String, String> valueOps = operations.opsForValue();
@@ -29,6 +29,6 @@ public class LoginRedisService {
     }
 
     public String findTokenByPid(String prefix, String username) {
-        return redisTemplate.opsForValue().get(username + ":" + prefix);
+        return stringTemplate.opsForValue().get(username + ":" + prefix);
     }
 }
