@@ -17,28 +17,42 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
+    public RedisTemplate<String, Object> objectTemplate(
+            RedisConnectionFactory connectionFactory
+    ) {
+        RedisTemplate<String, Object> template =
+                new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        StringRedisSerializer stringSerializer =
+                new StringRedisSerializer();
+        GenericJackson2JsonRedisSerializer JsonSerializer =
+                new GenericJackson2JsonRedisSerializer();
+
+        template.setKeySerializer(stringSerializer);
+        template.setHashKeySerializer(stringSerializer);
+        template.setValueSerializer(JsonSerializer);
+        template.setHashValueSerializer(JsonSerializer);
 
         return template;
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplateForQueue(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
+    public RedisTemplate<String, String> stringTemplate(
+            RedisConnectionFactory connectionFactory
+    ) {
+        RedisTemplate<String, String> template =
+                new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(new StringRedisSerializer());
-        template.setDefaultSerializer(new StringRedisSerializer());
+        StringRedisSerializer serializer =
+                new StringRedisSerializer();
+
+        template.setKeySerializer(serializer);
+        template.setHashKeySerializer(serializer);
+        template.setValueSerializer(serializer);
+        template.setHashValueSerializer(serializer);
+        template.setDefaultSerializer(serializer);
 
         return template;
     }

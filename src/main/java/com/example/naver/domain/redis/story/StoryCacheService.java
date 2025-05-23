@@ -26,7 +26,8 @@ import static com.example.naver.web.util.Util.UPDATE_STORY_CACHE;
 @Transactional
 public class StoryCacheService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> objectTemplate;
+    private final RedisTemplate<String, String> stringTemplate;
     private final SlackService slackService;
     private final StoryRepository storyRepository;
 
@@ -37,21 +38,10 @@ public class StoryCacheService {
      * */
     public void update(Story story, StoryItemResponseDto data) {
         try {
-            RedisSerializer<String> keySerializer =
-                    redisTemplate.getStringSerializer();
-
-            @SuppressWarnings("unchecked")
-            RedisSerializer<Object> valueSerializer =
-                    (RedisSerializer<Object>) redisTemplate.getValueSerializer();
-
-            redisTemplate.executePipelined((RedisCallback<?>) connection -> {
-                connection.hashCommands().hSet(
-                        keySerializer.serialize(UPDATE_STORY_CACHE),
-                        keySerializer.serialize(story.getId().toString()),
-                        valueSerializer.serialize(data)
-                );
-                return null;
-            });
+            objectTemplate.opsForHash()
+                    .put(UPDATE_STORY_CACHE,
+                            String.valueOf(story.getId()),
+                            data);
 
         } catch (RedisConnectionFailureException | RedisCommandTimeoutException e) {
             story.updateStory(data);
@@ -72,18 +62,12 @@ public class StoryCacheService {
      * */
     public void delete(List<Long> storyIds) {
         try {
-            RedisSerializer<String> keySerializer =
-                    redisTemplate.getStringSerializer();
+            String[] members = storyIds.stream()
+                    .map(String::valueOf)
+                    .toArray(String[]::new);
 
-            redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
-                for (Long storyId : storyIds) {
-                    connection.setCommands().sAdd(
-                            keySerializer.serialize(DELETED_STORY_CACHE),
-                            keySerializer.serialize(storyId.toString())
-                    );
-                }
-                return null;
-            });
+            stringTemplate.opsForSet()
+                    .add(DELETED_STORY_CACHE, members);
 
         } catch (RedisConnectionFailureException | RedisCommandTimeoutException e) {
             storyRepository.bulkUpdateStatusToFalse(storyIds);

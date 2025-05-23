@@ -25,7 +25,7 @@ import static com.example.naver.web.util.Util.QUEUE_SEQ_PREFIX;
 @RequiredArgsConstructor
 public class QueueService {
 
-    private final RedisTemplate<String, String> redisTemplateForQueue;
+    private final RedisTemplate<String, String> stringTemplate;
     private final SlackService slackService;
     private final ObjectMapper objectMapper;
 
@@ -68,7 +68,7 @@ public class QueueService {
 
     private void executeInsert(String seqKey, String queueKey, String msgJson) {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>(INSERT_LUA, Long.class);
-        redisTemplateForQueue.execute(
+        stringTemplate.execute(
                 script,
                 Arrays.asList(seqKey, queueKey),
                 msgJson,
@@ -111,7 +111,7 @@ public class QueueService {
         List<MessageQueueRequestDto> result = new ArrayList<>();
 
         Set<ZSetOperations.TypedTuple<String>> entries =
-                redisTemplateForQueue.opsForZSet().rangeWithScores(queueKey, 0, -1);
+                stringTemplate.opsForZSet().rangeWithScores(queueKey, 0, -1);
 
         if (entries.isEmpty()) {
             return Collections.emptyList();
@@ -161,7 +161,7 @@ public class QueueService {
 
     private void executeDelete(Long memberId, Long lastSequence) {
         String queueKey = QUEUE_PREFIX + memberId;
-        redisTemplateForQueue.opsForZSet().removeRangeByScore(queueKey, 0, lastSequence);
+        stringTemplate.opsForZSet().removeRangeByScore(queueKey, 0, lastSequence);
     }
 
 

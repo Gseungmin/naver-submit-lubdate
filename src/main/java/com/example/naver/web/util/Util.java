@@ -48,6 +48,8 @@ public class Util {
 
     /*시간*/
     public static final long EPOCH = 1721865600000L;
+    public static final long HALF_MINUTE = 30 * 1000;
+    public static final long ONE_MINUTE = 60 * 1000;
     public static final long TEM_MINUTE = 10 * 60 * 1000;
     public static final long ONE_HOUR = 60 * 60 * 1000;
     public static final long ONE_DAY = 24 * 60 * 60 * 1000;

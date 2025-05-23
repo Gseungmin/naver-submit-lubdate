@@ -7,13 +7,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.naver.web.exception.ExceptionType.*;
@@ -23,7 +21,7 @@ import static com.example.naver.web.util.Util.DELETED_STORY_CACHE;
 @RequiredArgsConstructor
 public class DeletedStoryCacheService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> stringTemplate;
     private final SlackService slackService;
 
     /*
@@ -31,11 +29,14 @@ public class DeletedStoryCacheService {
      * */
     public Set<Long> getDeletedStory() {
         try {
-            Set<Object> storyIds = redisTemplate.opsForSet().members(DELETED_STORY_CACHE);
+            Set<String> storyIds = stringTemplate.opsForSet().members(DELETED_STORY_CACHE);
+
+            if (Objects.requireNonNull(storyIds).isEmpty()) {
+                return Collections.emptySet();
+            }
 
             return storyIds.stream()
-                    .filter(Objects::nonNull)
-                    .map(member -> Long.valueOf(member.toString()))
+                    .map(Long::valueOf)
                     .collect(Collectors.toSet());
 
         } catch (RedisConnectionFailureException | RedisCommandTimeoutException e) {
@@ -56,8 +57,8 @@ public class DeletedStoryCacheService {
      * */
     public boolean isDeleted(Long storyId) {
         try {
-            Boolean inRedis = redisTemplate.opsForSet()
-                    .isMember(DELETED_STORY_CACHE, storyId);
+            Boolean inRedis = stringTemplate.opsForSet()
+                    .isMember(DELETED_STORY_CACHE, storyId.toString());
             return Boolean.TRUE.equals(inRedis);
 
         } catch (RedisConnectionFailureException | RedisCommandTimeoutException e) {
@@ -77,8 +78,10 @@ public class DeletedStoryCacheService {
      * */
     public void removeCache(Set<Long> ids) {
         try {
-            redisTemplate.opsForSet()
-                    .remove(DELETED_STORY_CACHE, ids.toArray());
+            stringTemplate.opsForSet()
+                    .remove(DELETED_STORY_CACHE, ids.stream()
+                            .map(String::valueOf)
+                            .toArray());
 
         } catch (RedisConnectionFailureException | RedisCommandTimeoutException e) {
             slackService.sendRedisErrorMessage(REDIS_CONNECT_ERROR);
@@ -97,28 +100,19 @@ public class DeletedStoryCacheService {
      * 2. DB에서 데이터 조회했을때 해당 아이디들에 대해서 삭제 반영
      * */
     public Set<Long> findDeleteIntersect(Set<Long> ids) {
-        RedisSerializer<String> keySerializer = redisTemplate.getStringSerializer();
-
         try {
-            List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
-                for (Long id : ids) {
-                    connection.setCommands().sIsMember(
-                            keySerializer.serialize(DELETED_STORY_CACHE),
-                            keySerializer.serialize(id.toString())
-                    );
-                }
-                return null;
-            });
+            SetOperations<String, String> setOps =
+                    stringTemplate.opsForSet();
 
-            Set<Long> deleted = new HashSet<>();
-            int idx = 0;
-            for (Long id : ids) {
-                Boolean isDel = (Boolean) results.get(idx++);
-                if (Boolean.TRUE.equals(isDel)) {
-                    deleted.add(id);
-                }
-            }
-            return deleted;
+            Map<Object, Boolean> result = setOps.isMember(
+                    DELETED_STORY_CACHE,
+                    ids.stream().map(String::valueOf).toArray()
+            );
+
+            return result.entrySet().stream()
+                    .filter(Map.Entry::getValue)
+                    .map(entry -> Long.valueOf(entry.getKey().toString()))
+                    .collect(Collectors.toSet());
 
         } catch (RedisConnectionFailureException | RedisCommandTimeoutException e) {
             slackService.sendRedisErrorMessage(REDIS_CONNECT_ERROR);
